@@ -29,8 +29,9 @@ Grid-aligned fragments are interpolated from primitives after rasterizing.
 
 
 ## The graphics pipeline
-### Vertex processing (Programmable)
+### Vertex Processing or Vertex Shader (Programmable)
 ![Vertex transformation pipeline](Images/vertex-transformation-pipeline.png)
+> In essence, in this step, we have to perform some linear transformation operations.
 #### Model Transform
 Transform a point from the model space (local coordinate system of an object) to the world space (global coordinate system).
 > Homogeneous coordinates: $$v = \begin{pmatrix} x \\ y \\ z \\ 1 \end{pmatrix}$$
@@ -52,31 +53,40 @@ $$A_1 = M \times A = T \times R \times S \times A$$
 With:
 * A is a set of vectors in **model space**
 * A<sub>1</sub> is a set of vectors in **world space**
+* M is the **model transformation matrix**
 #### View Transform
-Convert from world space into eye space (camera space)
-> Camera information
-> * Camera position: $$P = \begin{pmatrix} x \\ y \\ z \end{pmatrix}$$
-> * Forward vector: $$f = \begin{pmatrix} x_f \\ y_f \\ z_f \end{pmatrix}$$
-> * Up vector: $$u = \begin{pmatrix} x_u \\ y_u \\ z_u \end{pmatrix}$$
+Convert from world space into view space (eye space or camera space)
+> **View Information**
+> * View position: $$P = \begin{pmatrix} x \\ y \\ z \end{pmatrix}$$
+> * Target position: $$T = \begin{pmatrix} x_t \\ y_t \\ z_t \end{pmatrix}$$
+> * Up vector: $$u = \begin{pmatrix} x_u \\ y_u \\ z_u \end{pmatrix}$$, $$u' = \frac{u}{||u||_2}$$
+> * Forward vector: $$f = \begin{pmatrix} x_f \\ y_f \\ z_f \end{pmatrix} = \frac{P - T}{||P - T||_2}$$
 
-We have to follow three steps:
-* Normalize forward vector and up vector f and u.
-* Translation P into (0, 0, 0).
+We have to follow some steps:
+* Calculate the forward vector (must normalize it).
+* Normalize the up vector u.
+* Perform *translation* operation to convert P(x, y, z, 1) (in homogeneous coordinate form) into (0, 0, 0, 1).
 * Calculate vector l using the cross product of f and u.
 * Calculate vector u' using the cross product of l and f.
-* u', l, f formed into a basis, next step we convert into <bold>R</bold><sup>3</sup> using M<sub>R</sub> (Multi-rotation operation).
+* l, u', f formed into a basis, next step we convert into <bold>R</bold><sup>3</sup> using M<sub>R</sub> (Multi-rotation operation).
 
-> **View Matrix**
-> $$V = M_R \times T(-P) = \begin{pmatrix} f_x & u_x & l_x & 0 \\ f_y & u_y & l_y & 0 \\ f_z & u_z & l_y & 0 \\ 0 & 0 & 0 & 1 \end{pmatrix}^{-1} \times \begin{pmatrix} 1 & 0 & 0 & -x \\ 0 & 1 & 0 & -y \\ 0 & 0 & 1 & -z \\ 0 & 0 & 0 & 1 \end{pmatrix}$$
+> **View Transformation Matrix**
+> $$V = M_R \times T(-P) = \begin{pmatrix} l_x & u_x & f_x & 0 \\ l_y & u_y & f_y & 0 \\ l_z & u_z & f_z & 0 \\ 0 & 0 & 0 & 1 \end{pmatrix}^{-1} \times \begin{pmatrix} 1 & 0 & 0 & -x \\ 0 & 1 & 0 & -y \\ 0 & 0 & 1 & -z \\ 0 & 0 & 0 & 1 \end{pmatrix}$$
 #### Projection Transform
-> Perspective Projection
-> * Symmetric view frustsum
-
-#### Normalize Device Coordinate (NDC)
+![Perspective frustum](Images/perspective-frustum.png)
+In perspective projection, a 3D point in a truncated pyramid frustum (eye coordinates) is mapped to a cube (NDC); the range of x-coordinate from [l, r] to [-1, 1], the y-coordinate from [b, t] to [-1, 1] and the z-coordinate from [-n, -f] to [-1, 1].
+##### Clip coordinates
+##### Normalize Device Coordinate (NDC)
 
 ### Rasterizer
 
-### Fragment processor (Programmable)
+### Fragment Processor or Fragment Shader (Programmable)
+#### Phong Lighting Model or Phong Shading
+The major building blocks of the Phong lighting model consist of 3 components: **ambient**, **diffuse** and **specular** lighting. Below you can see what these lighting components look like on their own and combined:
+* **Ambient lighting**: even when it is dark there is usually still some light somewhere in the world (the moon, a distant light) so objects are almost never completely dark. To simulate this we use an ambient lighting constant that always gives the object some color.
+* **Diffuse lighting**: simulates the directional impact a light object has on an object. This is the most visually significant component of the lighting model. The more a part of an object faces the light source, the brighter it becomes.
+* **Specular lighting**: simulates the bright spot of a light that appears on shiny objects. Specular highlights are more inclined to the color of the light than the color of the object.
+In Phong shading, the light we saw is the combination of three above types. 
 
 ### Output merging
 
