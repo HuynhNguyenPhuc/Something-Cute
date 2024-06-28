@@ -20,7 +20,7 @@ In 3D, an AABB is represented by:
 
 ## Construction
 
-Given a set of points or geometric objects, the AABB can be constructed by determining the minimum and maximum coordinates along each axis. For a set of points \(\{(x_i, y_i, z_i)\}\), the AABB can be constructed as:
+Given a set of points or geometric objects, the AABB can be constructed by determining the minimum and maximum coordinates along each axis. For a set of points $`(x_i, y_i, z_i)`$, the AABB can be constructed as:
 
 - $`\text{min}_x = \min(x_i)`$
 - $`\text{min}_y = \min(y_i)`$
