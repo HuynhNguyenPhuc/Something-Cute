@@ -1,4 +1,4 @@
-# 3D Visualization
+# 3D Rendering
 
 ## How to represent an 3D object
 We have to follow three steps
@@ -19,7 +19,7 @@ Build a backbone structure for the 3D object for the ability to represent a moti
 Render the polygon mesh into the 2D environment such as computer screen, mobile screen, etc.
 
 ### Primitives
-A primitive is formed by one or more vertices. In this case we discuss about triangle.
+A primitive is formed by one or more vertices.
 * Vertex: 3D point v(x, y, z)
 * Triangle: A set of three points v<sub>1</sub>, v<sub>2</sub>, v<sub>3</sub>
 * Normal vector: A set of three vectors n<sub>1</sub>, n<sub>2</sub>, n<sub>3</sub> - describing the surface orientation n = (n<sub>x</sub>, n<sub>y</sub>, n<sub>z</sub>)
@@ -34,22 +34,23 @@ Grid-aligned fragments are interpolated from primitives after rasterizing.
 > In essence, in this step, we have to perform some linear transformation operations.
 #### Model Transform
 Transform a point from the model space (local coordinate system of an object) to the world space (global coordinate system).
-> Homogeneous coordinates: $`v=\begin{pmatrix}x\\y\\z\\1\end{pmatrix}`$ <br>
-> Ensure homogeneous when all operations are matrix multiplication (or linear transformation). Therefore, it makes the calculations faster and can inverse.
+> Homogeneous coordinates: \
+> $`v=\begin{pmatrix}x\\y\\z\\1\end{pmatrix}`$ \
+> Ensure homogeneous when all operations are matrix multiplication (or linear transformation). Therefore, it makes the calculations faster and can inverse. \
 > $$f_1 \circ f_2 \circ \cdots \circ f_n(x) = M_1 \times M_2 \times \cdots \times M_N \times x = M \times x$$
 
 Three operations (applied for homogeneous coordinates):
-* Scaling:
+* Scaling: \
 $`S(s).v = \begin{pmatrix} s_x & 0 & 0 & 0 \\ 0 & s_y & 0 & 0 \\ 0 & 0 & s_z & 0 \\ 0 & 0 & 0 & 1 \end{pmatrix} \begin{pmatrix} x \\ y \\ z \\ 1 \end{pmatrix} = \begin{pmatrix} s_x x \\ s_y y \\ s_z z \\ 1 \end{pmatrix}`$
-* Rotation:
-$`R_z(\theta) = \begin{pmatrix} \cos(\theta) & -\sin(\theta) & 0 & 0 \\ \sin(\theta) & \cos(\theta) & 0 & 0 \\ 0 & 0 & 1 & 0 \\ 0 & 0 & 0 & 1 \end{pmatrix}`$
-$`R_x(\theta) = \begin{pmatrix} 1 & 0 & 0 & 0 \\ 0 & \cos(\theta) & -\sin(\theta) & 0 \\ 0 & \sin(\theta) & \cos(\theta) & 0 \\ 0 & 0 & 0 & 1 \end{pmatrix}`$
+* Rotation: \
+$`R_z(\theta) = \begin{pmatrix} \cos(\theta) & -\sin(\theta) & 0 & 0 \\ \sin(\theta) & \cos(\theta) & 0 & 0 \\ 0 & 0 & 1 & 0 \\ 0 & 0 & 0 & 1 \end{pmatrix}`$ \
+$`R_x(\theta) = \begin{pmatrix} 1 & 0 & 0 & 0 \\ 0 & \cos(\theta) & -\sin(\theta) & 0 \\ 0 & \sin(\theta) & \cos(\theta) & 0 \\ 0 & 0 & 0 & 1 \end{pmatrix}`$ \
 $`R_y(\theta) = \begin{pmatrix} \cos(\theta) & 0 & \sin(\theta) & 0 \\ 0 & 1 & 0 & 0 \\ -\sin(\theta) & 0 & \cos(\theta) & 0 \\ 0 & 0 & 0 & 1 \end{pmatrix}`$
-* Translation
+* Translation \
 $`T(d) = \begin{pmatrix} 1 & 0 & 0 & d_x \\ 0 & 1 & 0 & d_y \\ 0 & 0 & 1 & d_z \\ 0 & 0 & 0 & 1 \end{pmatrix}`$
 
-The sequence of operations or **Model Matrix**:
-$$A_1 = M \times A = T \times R \times S \times A$$
+The sequence of operations or **Model Matrix**: \
+$`A_1 = M \times A = T \times R \times S \times A`$ \
 With:
 * A is a set of vectors in **model space** (**model coordinates**)
 * A<sub>1</sub> is a set of vectors in **world space** (**world coordinates**)
@@ -57,10 +58,13 @@ With:
 
 #### View Transform
 Convert from **world space** (**world coordinates**) into **eye space** (**eye coordinates**)
-> Camera information
-> * Camera position: $`P = \begin{pmatrix} x \\ y \\ z \end{pmatrix}`$
-> * Forward vector: $`f = \begin{pmatrix} x_f \\ y_f \\ z_f \end{pmatrix}`$
-> * Up vector: $`u = \begin{pmatrix} x_u \\ y_u \\ z_u \end{pmatrix}`$
+> **Camera information**
+> * Camera position: \
+>   $`P = \begin{pmatrix} x \\ y \\ z \end{pmatrix}`$
+> * Forward vector: \
+>   $`f = \begin{pmatrix} x_f \\ y_f \\ z_f \end{pmatrix}`$
+> * Up vector: \
+>   $`u = \begin{pmatrix} x_u \\ y_u \\ z_u \end{pmatrix}`$
 
 We have to follow some steps:
 * Calculate the forward vector (must normalize it).
@@ -70,7 +74,7 @@ We have to follow some steps:
 * Calculate vector u' using the cross product of l and f.
 * l, u', f formed into a basis, next step we convert into <bold>R</bold><sup>3</sup> using M<sub>R</sub> (Multi-rotation operation).
 
-> **View Matrix**
+> **View Matrix** \
 > $`V = M_R \times T(-P) = \begin{pmatrix} f_x & u_x & l_x & 0 \\ f_y & u_y & l_y & 0 \\ f_z & u_z & l_y & 0 \\ 0 & 0 & 0 & 1 \end{pmatrix}^{-1} \times \begin{pmatrix} 1 & 0 & 0 & -x \\ 0 & 1 & 0 & -y \\ 0 & 0 & 1 & -z \\ 0 & 0 & 0 & 1 \end{pmatrix}`$
 
 #### Normal Vector Transform
@@ -78,13 +82,9 @@ We have to follow some steps:
 
 #### Projection Transform
 Convert from **eye space** (**eye coordinates**) into **clip space** (**clip coordinates**)
-> 
 
-#### Normalize Device Coordinate (NDC)
 ![Perspective frustum](Images/perspective-frustum.png)
 In perspective projection, a 3D point in a truncated pyramid frustum (eye coordinates) is mapped to a cube (NDC); the range of x-coordinate from [l, r] to [-1, 1], the y-coordinate from [b, t] to [-1, 1] and the z-coordinate from [-n, -f] to [-1, 1].
-##### Clip coordinates
-##### Normalize Device Coordinate (NDC)
 
 ### Rasterizer
 
