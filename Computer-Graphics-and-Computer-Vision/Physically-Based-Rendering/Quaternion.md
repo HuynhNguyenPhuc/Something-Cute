@@ -148,6 +148,9 @@ additions.
 quaternion is a 4-tuple, which is a more concise representation than a rotation matrix. Its geometric meaning is also more obvious as the rotation axis and angle can be trivially recovered. The quaternion algebra to be introduced will also allow us to easily compose rotations. This is because
 quaternion composition takes merely sixteen multiplications and twelve additions.
 
+### Quaternion Algebra
+
+
 
 
 
