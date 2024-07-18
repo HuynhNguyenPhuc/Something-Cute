@@ -1,4 +1,5 @@
 import numpy as np
+from util import *
 
 class GaussianDistribution:
     @staticmethod
@@ -67,6 +68,30 @@ class GaussianMixtureModel:
         return posterior
     
     def predict(self, x):
-        posterior = self.predict_proba(x)
-        labels = np.argmax(posterior, axis=1)
-        return labels
+        probs = np.zeros((x.shape[0], 1))
+        for i in range(x.shape[0]):
+            for j in range(self.k):
+                probs[i][0] += self.pi[j] * GaussianDistribution.pdf(x[i].T, self.mu[j].T, self.sigma[j])
+        return probs
+    
+if __name__ == '__main__':
+    train_x, train_y, test_x, test_y, classes, num_classes = preprocessing()
+
+    gmm_models = []
+
+    for i in range(num_classes):
+        gmm = GaussianMixtureModel(train_x[train_y.flatten() == i + 1], k=3)
+        gmm.initialize_parameters()
+        gmm.train(max_iterations=100)
+        gmm_models.append(gmm)
+
+    predictions = np.argmax(np.concatenate([gmm.predict(test_x) for gmm in gmm_models], axis = 1), axis = 1)
+
+    confusion_matrix = np.zeros((num_classes, num_classes))
+
+    for i in range(test_y.shape[0]):
+        confusion_matrix[test_y[i] - 1, predictions[i]] += 1
+
+    print("Confusion Matrix:")
+    print(confusion_matrix)
+    print("Accuracy: ", np.sum(np.diag(confusion_matrix)) / np.sum(confusion_matrix))
