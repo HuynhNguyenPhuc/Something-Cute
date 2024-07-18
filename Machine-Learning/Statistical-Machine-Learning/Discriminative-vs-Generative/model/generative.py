@@ -10,9 +10,6 @@ class GenerativeModel(Classifier):
         self.bias = []
         self.confusion_matrix = []
 
-        self.num_folds = 5
-        self.kfold = KFold(X = self.X, y = self.y, num_folds=self.num_folds, num_observations=self.num_observations)
-
     def predict(self, X, w, b):
         return X @ w.T + b
 
@@ -47,9 +44,7 @@ class Bayesian(GenerativeModel):
         return exp_y / sum_y 
 
     def train(self):
-        X_train, y_train, X_val, y_val = None, None, None, None
-        for i in range(self.num_folds):
-            X_train, y_train, X_val, y_val = self.kfold.get_train_and_validation_data(i)
+        for X_train, y_train, X_val, y_val in zip(*self.kfold.split(self.X, self.y)):
             X_train = X_train[:,:-1]
             X_val = X_val[:,:-1]
 

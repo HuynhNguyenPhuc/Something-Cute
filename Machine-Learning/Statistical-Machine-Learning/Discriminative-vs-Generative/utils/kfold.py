@@ -1,45 +1,38 @@
 import numpy as np
 
 class KFold:
-    def __init__(self, X, y, num_folds, num_observations, mode = "random", random_state = 42):
-        self.X = X
-        self.y = y
-        
+    def __init__(self, num_folds, shuffle=False, random_state=42):
         self.num_folds = num_folds
-        self.num_observations = num_observations
-
+        self.shuffle = shuffle
         self.random_state = random_state
-        self.indices = self.generate_indices(mode)
-        
-        self.X_fold = []
-        self.y_fold = []
-        for i in range(self.num_folds):
-            self.X_fold.append(self.X[self.indices[i]])
-            self.y_fold.append(self.y[self.indices[i]])
-
-    def generate_indices(self, mode="random"):
-        folds = []
-
-        fold_size = self.num_observations // self.num_folds
-
-        if mode == "normal":
-            indices = list(range(self.num_observations))
-        elif mode == "random":
-            np.random.seed(self.random_state)
-            indices = np.random.permutation(self.num_observations)
-
-        for i in range(self.num_folds):
-            start_index = i * fold_size
-            end_index = self.num_observations if i == self.num_folds - 1 else start_index + fold_size
-            folds.append(indices[start_index:end_index])
-
-        return folds
     
-    def get_train_and_validation_data(self, fold_index):
-        X_val = self.X_fold[fold_index]
-        y_val = self.y_fold[fold_index]
-        
-        X_train = np.concatenate(self.X_fold[:fold_index] + self.X_fold[fold_index + 1:])
-        y_train = np.concatenate(self.y_fold[:fold_index] + self.y_fold[fold_index + 1:])
-        
-        return X_train, y_train, X_val, y_val
+    def split(self, X, y):
+        X_temp = X.copy()
+        y_temp = y.copy()
+
+        if self.shuffle:
+            np.random.seed(self.random_state)
+            indices = np.random.permutation(X_temp.shape[0])
+            X_temp = X_temp[indices]
+            y_temp = y_temp[indices]
+
+        X_fold = np.array_split(X_temp, self.num_folds)
+        y_fold = np.array_split(y_temp, self.num_folds)
+
+        train_Xs = []
+        train_ys = []
+        val_Xs = []
+        val_ys = []
+
+        for i in range(self.num_folds):
+            train_X = np.concatenate(X_fold[:i] + X_fold[i+1:], axis = 0)
+            val_X = X_fold[i]
+            train_y = np.concatenate(y_fold[:i] + y_fold[i+1:], axis = 0)
+            val_y = y_fold[i]
+
+            train_Xs.append(train_X)
+            train_ys.append(train_y)
+            val_Xs.append(val_X)
+            val_ys.append(val_y)
+
+        return train_Xs, train_ys, val_Xs, val_ys

@@ -1,5 +1,5 @@
 import numpy as np
-from keras.utils import to_categorical
+from keras._tf_keras.keras.utils import to_categorical
 from scipy.stats import mode
 from utils.kfold import KFold
 from model.classifer import Classifier
@@ -14,9 +14,6 @@ class DiscriminativeModel(Classifier):
         dummy_vector = np.ones(self.num_observations).reshape(-1, 1)
         self.X = np.concatenate([self.X, dummy_vector], axis = 1)
 
-        self.num_folds = 5
-        self.kfold = KFold(X = self.X, y = self.y, num_folds=self.num_folds, num_observations=self.num_observations)
-
     def predict(self, W, X):
         y = X @ W
         return y
@@ -30,10 +27,8 @@ class OneVsOne(DiscriminativeModel):
         return np.concatenate([1 - u_vector, u_vector], axis = 1)
 
     def train(self):
-        X_train, y_train, X_val, y_val = None, None, None, None
-        for i in range(self.num_folds):
+        for X_train, y_train, X_val, y_val in zip(*self.kfold.split(self.X, self.y)):
             y_pred = []
-            X_train, y_train, X_val, y_val = self.kfold.get_train_and_validation_data(i)
             for u in range(self.num_categories):
                 for v in range(self.num_categories):
                     if u >= v:
@@ -61,10 +56,8 @@ class OneVsTheRest(DiscriminativeModel):
         super().__init__(data_dir, label)
 
     def train(self):
-        X_train, y_train, X_val, y_val = None, None, None, None
-        for i in range(self.num_folds):
+        for X_train, y_train, X_val, y_val in zip(*self.kfold.split(self.X, self.y)):
             y_pred = []
-            X_train, y_train, X_val, y_val = self.kfold.get_train_and_validation_data(i)
             for j in range(self.num_categories - 1):
                 y_train_temp = np.concatenate([(y_train != j).astype(int).reshape(-1, 1), (y_train == j).astype(int).reshape(-1, 1)], axis = 1)
                 W = np.linalg.inv(X_train.T @ X_train) @ X_train.T @ y_train_temp
@@ -85,10 +78,7 @@ class MultipleClass(DiscriminativeModel):
         super().__init__(data_dir, label)
 
     def train(self):
-        X_train, y_train, X_val, y_val = None, None, None, None
-        for i in range(self.num_folds):
-            X_train, y_train, X_val, y_val = self.kfold.get_train_and_validation_data(i)
-
+        for X_train, y_train, X_val, y_val in zip(*self.kfold.split(self.X, self.y)):
             y_train = to_categorical(y_train)
 
             W = np.linalg.inv(X_train.T @ X_train) @ X_train.T @ y_train
@@ -108,9 +98,6 @@ class Fisher(DiscriminativeModel):
         self.X = self.dimensionality_reduction(self.X, self.y)
         dummy_vector = np.ones((self.X.shape[0], 1))
         self.X = np.concatenate([self.X, dummy_vector], axis = 1)
-
-        self.num_folds = 5
-        self.kfold = KFold(X = self.X, y = self.y, num_folds=self.num_folds, num_observations=self.num_observations)
 
     def get_within_class_covariance_matrix(self, partitions):
         return np.sum([partition.shape[0] * self.get_covariance_matrix(partition) for partition in partitions], axis = 0)
@@ -135,9 +122,6 @@ class Fisher(DiscriminativeModel):
 
         overall_mean = np.mean(X, axis=0).reshape(X.shape[1], 1)
         S_B = self.get_between_class_covariance_matrix(mean_vectors, overall_mean, partitions) 
-        
-        # print("Within-class covariance matrix:\n", S_W)
-        # print("Between-class covariance matrix:\n", S_B)
 
         eig_vals, eig_vecs = np.linalg.eig(np.linalg.inv(S_W).dot(S_B))
         eig_pairs = [(np.abs(eig_vals[i]), eig_vecs[:, i]) for i in range(len(eig_vals))]
@@ -149,15 +133,12 @@ class Fisher(DiscriminativeModel):
         return X_lda
 
     def train(self):
-        X_train, y_train, X_val, y_val = None, None, None, None
-        for i in range(self.num_folds):
-            X_train, y_train, X_val, y_val = self.kfold.get_train_and_validation_data(i)
+        for X_train, y_train, X_val, y_val in zip(*self.kfold.split(self.X, self.y)):
+            X_train = self.dimensionality_reduction(X_train, y_train)
+            X_val = self.dimensionality_reduction(X_val, y_val)
 
-            # X_train = self.dimensionality_reduction(X_train, y_train)
-            # X_val = self.dimensionality_reduction(X_val, y_val)
-
-            # X_train = np.concatenate([X_train, np.ones((X_train.shape[0], 1))], axis = 1)
-            # X_val = np.concatenate([X_val, np.ones((X_val.shape[0], 1))], axis = 1)
+            X_train = np.concatenate([X_train, np.ones((X_train.shape[0], 1))], axis = 1)
+            X_val = np.concatenate([X_val, np.ones((X_val.shape[0], 1))], axis = 1)
 
             y_train = to_categorical(y_train)
 

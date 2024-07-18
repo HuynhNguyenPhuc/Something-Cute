@@ -1,5 +1,6 @@
 import numpy as np
 import pandas as pd
+from utils.kfold import KFold
 
 class Classifier:
     def __init__(self, data_dir, label="species"):
@@ -15,7 +16,8 @@ class Classifier:
         self.categories = self.dataset[label].cat.categories
         self.num_categories = len(self.categories)
 
-        print(self.categories)
+        self.num_folds = 5
+        self.kfold = KFold(self.num_folds, shuffle = True, random_state=42)
 
         self.accuracy = None
 
