@@ -1,4 +1,4 @@
-# 3D Rendering
+# Traditional 3D Rendering
 
 ## How to represent an 3D object
 We have to follow three steps

@@ -219,6 +219,86 @@ quaternion is a 4-tuple, which is a more concise representation than a rotation 
 quaternion composition takes merely sixteen multiplications and twelve additions.
 
 ### Quaternion Algebra
+#### Quaternion representation
+A **quaternion** has four independent components $`w`$, $`x`$, $`y`$ and $`z`$.
+
+$$q = w + x\mathbf{i} + y\mathbf{j} + z\mathbf{k}$$
+
+$$q = w + \mathbf{v}$$
+
+#### Addition and Multiplication
+
+$$q_1 + q_2 = (w_1 + w_2) + (x_1 + x_2)\mathbf{i} + (y_1 + y_2)\mathbf{j} + (z_1 + z_2)\mathbf{k}$$
+
+$$q_1 q_2 = w_1w_2 - \mathbf{v_1} \cdot \mathbf{v_2} + w_1\mathbf{v_2} + w_2\mathbf{v_1} + \mathbf{v_1} \times \mathbf{v_2}$$
+
+#### Norm
+
+$$||q|| = \sqrt{w^2 + x^2 + y^2 + z^2}$$
+
+$$q_{norm} = \frac{q}{||q||}$$
+
+#### Complex Conjugate
+
+$$q^{*} = w - x\mathbf{i} - y\mathbf{j} - z\mathbf{k}$$
+
+#### Inverse
+
+$$qq^{*} = (w + \mathbf{v})(w + \mathbf{-v})$$
+
+$$ = w^2 - \mathbf{v} \cdot \mathbf{-v} + w(\mathbf{v} + \mathbf{-v}) + \mathbf{v} \times \mathbf{-v}$$
+
+$$ = w^2 + \mathbf{v} \cdot \mathbf{v}$$
+
+$$ = w^2 + x^2 + y^2 + z^2 = ||q||^2$$
+
+So,
+
+$$q (\frac{q^*}{||q||^2}) = 1$$
+
+$$q^{-1} = \frac{q^*}{||q||^2}$$
+
+### Quaternion Rotation
+In fact, a quaternion is simply a vector in $`\mathbb{R}^4`$. First, we note that a vector in $`\mathbb{R}^3`$ is a quaternion whose real part is zero. In the context of rotation, we only consider unit quaternions.
+
+Consider a unit quaternion $`q = q_0 + \mathbf{q}`$. We have $`q_0^2 + ||\mathbf{q}||^2 = 1`$, so exist some angle $`\theta`$ such that:
+
+$$\cos \theta = q_0$$
+
+$$\sin \theta = ||\mathbf{q}||$$
+
+We define an operator for vector $`\textbf{v}`$ below:
+
+$$\mathbf{L}_q(v) = qvq^* = (q_0 + \mathbf{q})(0 + \mathbf{v})(q_0 - \mathbf{q})$$
+
+$$ = (q_0^2 - ||\mathbf{q}||^2)\mathbf{v} + 2(\mathbf{q} \cdot \mathbf{v})q + 2q_0(\mathbf{q} \times \mathbf{v})$$
+
+We have some characteristics about this operator:
+* First, this operator does not change the length of the vector $`v`$:
+
+$$||L_q(v) = ||q|| \cdot ||v|| \cdot ||q^*|| = ||v|| = ||\mathbf{v}||$$
+
+* Second, if the direction of v is along q, then it will be unchanged after performing the operator L_q.
+
+$$qvq^* = q(kq)q^* = (q_0^2 - ||\mathbf{q}||^2)k\mathbf{q} + 2(\mathbf{q} \cdot k\mathbf{q})q + 2q_0(\mathbf{q} \times k\mathbf{q}) = k(q_0^2 + ||\textbf{q}||^2)q = kq$$
+
+We can see here this operator has two characteristics similar to the rotation. We will prove it in the next section.
+
+#### Proof
+First, we remark this operator is linear in $`\mathbb{R}^3`$. In detail
+
+$$L_q(\alpha_1 v_1 + \alpha_2 v_2) = \alpha_1 L_q(v_1) + \alpha_2 L_q(v_2)$$
+
+**Theorem** 
+For any unit quaternion
+
+$$q = q_0 + \mathbf{q} = \cos \frac{\theta}{2} + \mathbf{u}\sin \frac{\theta}{2}$$
+
+and for any pure quaternion $`v \in \mathbb{R}^4`$. The operator $`L_q`$ is equivalent to performing a rotation arount the axis rotation $`\mathbf{v}`$ with the angle $`\theta`$.
+
+Given a vector pure quaternion $`v \in \mathbb{R}^4`$, we decompose it as $`v = a + n`$, where a is the component along the vector q and n is the component orthogonal to q. Then we show that under the operator $`L_q`$, a is invariant, while n is rotated about q through an angle θ. Since the operator is linear, this shows that the image $`qvq^∗`$ is indeed interpreted as a rotation of n about q through an angle $`\theta`$.
+
+### Slerp
 
 
 
