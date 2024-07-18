@@ -13,38 +13,12 @@ def get_iris_data(path="./data/iris.dat"):
     * test_x3
     :param path: path to the iris dataset file
     """ 
-    dataIris = pd.read_table('data/iris.dat', delim_whitespace = True, header = None)
-    dataIris.head()
-
-    np.random.seed(42)
+    dataIris = pd.read_table('./data/iris.dat', delim_whitespace = True, header = None)
+    
     dataIris = dataIris.to_numpy()
-    dataIris = np.random.permutation(dataIris)
     dataIris[:, 4] = dataIris[:, 4]
     
-    x1 = dataIris[dataIris[:,4]==1, 0:4]
-    x2 = dataIris[dataIris[:,4]==2, 0:4]
-    x3 = dataIris[dataIris[:,4]==3, 0:4]
-    y1 = dataIris[dataIris[:,4]==1, 4]
-    y2 = dataIris[dataIris[:,4]==2, 4]
-    y3 = dataIris[dataIris[:,4]==3, 4]
+    X = dataIris[:, 0:4]
+    y = dataIris[:, 4]
 
-    train_x1 = x1[0:40,:]
-    test_x1 = x1[40:,:]
-    train_x2 = x2[0:40,:]
-    test_x2 = x2[40:,:]
-    train_x3 = x3[0:40,:]
-    test_x3 = x3[40:,:]
-
-    train_y1 = y1[0:40].reshape((40,1))
-    test_y1 = y1[40:].reshape((10,1))
-    train_y2 = y2[0:40].reshape((40,1))
-    test_y2 = y2[40:].reshape((10,1))
-    train_y3 = y3[0:40].reshape((40,1))
-    test_y3 = y3[40:].reshape((10,1))
-
-    train_x = np.concatenate((train_x1, train_x2, train_x3), axis=0)
-    train_y = np.concatenate((train_y1, train_y2, train_y3), axis=0)
-    test_x = np.concatenate((test_x1, test_x2, test_x3), axis=0)
-    test_y = np.concatenate((test_y1, test_y2, test_y3), axis=0)
-
-    return (train_x, train_y, test_x, test_y)
+    return (X, y)

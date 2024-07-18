@@ -1,5 +1,6 @@
 import numpy as np
 from util import *
+from kfold import KFold
 
 class GaussianDistribution:
     @staticmethod
@@ -75,22 +76,27 @@ class GaussianMixtureModel:
         return probs
     
 if __name__ == '__main__':
-    train_x, train_y, test_x, test_y, classes, num_classes = preprocessing()
+    X, y, classes, num_classes = preprocessing()
 
-    gmm_models = []
+    num_folds = 5
 
-    for i in range(num_classes):
-        gmm = GaussianMixtureModel(train_x[train_y.flatten() == i + 1], k=3)
-        gmm.initialize_parameters()
-        gmm.train(max_iterations=100)
-        gmm_models.append(gmm)
-
-    predictions = np.argmax(np.concatenate([gmm.predict(test_x) for gmm in gmm_models], axis = 1), axis = 1)
+    kf = KFold(num_folds=num_folds, shuffle=True, random_state=10)
 
     confusion_matrix = np.zeros((num_classes, num_classes))
 
-    for i in range(test_y.shape[0]):
-        confusion_matrix[test_y[i] - 1, predictions[i]] += 1
+    for train_X, train_y, val_X, val_y in zip(*kf.split(X, y)):
+        gmm_models = []
+
+        for i in range(num_classes):
+            gmm = GaussianMixtureModel(train_X[train_y.flatten() == i + 1], k = 3)
+            gmm.initialize_parameters()
+            gmm.train(max_iterations=100)
+            gmm_models.append(gmm)
+
+        predictions = np.argmax(np.concatenate([gmm.predict(val_X) for gmm in gmm_models], axis = 1), axis = 1)
+
+        for i in range(val_y.shape[0]):
+            confusion_matrix[val_y[i] - 1, predictions[i]] += 1
 
     print("Confusion Matrix:")
     print(confusion_matrix)
